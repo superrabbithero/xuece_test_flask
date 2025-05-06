@@ -42,6 +42,31 @@ class PackageRepository:
         )
         db.session.commit()
 
+
+    @staticmethod
+    def update_package_info(package_id, comment=None, name=None):
+        """
+        更新包信息（描述或名称）
+        参数:
+            package_id: 要更新的包ID
+            comment (可选): 新的描述，如果提供则更新
+            name (可选): 新的名称，如果提供则更新
+        """
+        update_data = {}
+        if comment is not None:
+            update_data['comment'] = comment
+        if name is not None:
+            update_data['name'] = name
+
+        if not update_data:
+            raise ValueError("至少需要提供 comment 或 name 中的一个参数")
+
+        Package.query.filter_by(id=package_id).update(
+            update_data,
+            synchronize_session=False
+        )
+        db.session.commit()
+
     @staticmethod
     def get_versions(appname, system=None):
         """获取指定应用的所有版本"""

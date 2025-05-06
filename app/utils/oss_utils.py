@@ -4,9 +4,11 @@ from oss2.exceptions import OssError, NoSuchKey
 import oss2 
 from oss2 import Auth, Bucket, exceptions
 from functools import lru_cache
+from urllib.parse import urlparse
 
 import logging
-
+# from flask import jsonify
+from datetime import datetime, timedelta
 import json
 from config import Config
 
@@ -25,7 +27,7 @@ def get_bucket():
     )
 
     endpoint = f"http://oss-{Config.OSS_REGION}.aliyuncs.com"
-    print(auth,endpoint)
+    # print(auth,endpoint)
     return Bucket(auth, endpoint, Config.OSS_BUCKET)
 
 def get_oss_client():
@@ -107,13 +109,13 @@ def delete_oss_file(oss_key):
     :raises: OSSOperationError
     :return: bool 是否成功
     """
-    print(oss_key)
+    # print(oss_key)
     try:
-        print(f"开始创建bucket")
+        # print(f"开始创建bucket")
         bucket = get_bucket()
 
         info = bucket.get_bucket_info()
-        print(f"Bucket验证成功，创建时间: {info.creation_date}")
+        # print(f"Bucket验证成功，创建时间: {info.creation_date}")
 
         result = bucket.delete_object(oss_key)
         return result.status == 204
@@ -163,3 +165,92 @@ def upload_to_oss(file_path, object_name=None):
 
     # 返回可访问的URL
     return f"https://{Config.OSS_BUCKET}.oss-{Config.OSS_REGION}.aliyuncs.com/{object_name}"
+
+def get_download_url(oss_key):
+    bucket = get_bucket()
+
+    expires = 3600  # 单位：秒
+    # 生成原始签名URL（含OSS默认域名）
+    original_url = bucket.sign_url('GET', oss_key, expires)
+    
+    # 解析原始URL，提取路径和查询参数
+    parsed_url = urlparse(original_url)
+    path_and_query = parsed_url.path + "?" + parsed_url.query
+    
+    # 替换为自定义域名（需确保已绑定到OSS Bucket）
+    custom_domain = "oss.superrabbithero.xyz"  # 替换为你的自定义域名
+    custom_url = f"https://{custom_domain}{path_and_query}"
+
+    # print(url)
+    
+    return {
+        'url': custom_url,
+        'expires': (datetime.now() + timedelta(seconds=expires)).isoformat()
+    }
+
+def createplist(oss_key, bundle_id, version, apptitle):
+    print("上传plist到OSS")
+    
+    filename = oss_key[9:-4] + ".plist"
+    print(filename)
+    
+    # 生成plist内容
+    content = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>items</key>
+        <array>
+            <dict>
+                <key>assets</key>
+                <array>
+                    <dict>
+                        <key>kind</key>
+                        <string>software-package</string>
+                        <key>url</key>
+                        <string>https://oss.superrabbithero.xyz/""" + oss_key + """</string>
+                    </dict>
+                    <dict>
+                        <key>kind</key>
+                        <string>full-size-image</string>
+                        <key>needs-shine</key>
+                        <true/>
+                        <key>url</key>
+                        <string>https://enterprise.cloudpay.com.cn/app/packages/iphone-2x.png</string>
+                    </dict>
+                </array>
+                <key>metadata</key>
+                    <dict>
+                    <key>bundle-identifier</key>
+                    <string>""" + bundle_id + """</string>
+                    <key>bundle-version</key>
+                    <string>""" + version + """</string>
+                    <key>kind</key>
+                    <string>software</string>
+                    <key>title</key>
+                    <string>""" + apptitle + """</string>
+                </dict>
+            </dict>
+        </array>
+</dict>
+</plist>"""
+    
+    try:
+        # 获取OSS bucket
+        bucket = get_bucket()
+        
+        # 上传文件到OSS
+        bucket.put_object(
+            key='packages/plists/' + filename,  # 文件在OSS中的路径+文件名
+            data=content,             # 文件内容
+            headers={
+                'Content-Type': 'application/x-plist'  # 设置正确的Content-Type
+            }
+        )
+        
+        print(f"成功上传plist文件到OSS: {filename}")
+        return {'success': True, 'filename': filename}
+        
+    except Exception as e:
+        print(f"上传plist到OSS失败: {str(e)}")
+        return {'error': str(e)}

@@ -27,7 +27,7 @@ class Package(db.Model):
     # lazy='joined' 表示查询 Package 时自动联表加载 Icon
     
     def __repr__(self):
-        return f'<Package {self.packagename}@{self.version}>'
+        return f'<Package {self.name}@{self.version}>'
     
     def to_dict(self):
         """

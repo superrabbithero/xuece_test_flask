@@ -14,7 +14,7 @@ from app.utils.package_utils import (
     getappname_by_packagename,
     get_ip_and_port
 )
-from app.utils.oss_utils import (delete_oss_file,restore_oss_file,upload_to_oss)
+from app.utils.oss_utils import (delete_oss_file,restore_oss_file,upload_to_oss,get_download_url,createplist)
 
 import hashlib
 
@@ -165,7 +165,15 @@ def create_package():
             'oss_key': package_info['oss_key'],
             'icon_id': icon_id
         }
-        
+
+        if package_info['system'] == 'ios':
+            apptitles = ["学测学生端","学测教师端","学测家长端"]
+            createplist(
+              package_info['oss_key'], 
+              package_info['package_name'], 
+              package_info['version'], 
+              apptitles[int(package_info['appname'])])
+
         PackageRepository.create(package_data)
         
         return jsonify({'message': 'Package created successfully'}), 201
@@ -179,7 +187,7 @@ def create_package():
 @package_bp.route('/<int:package_id>', methods=['PUT'])
 def update_package(package_id):
     """
-    更新软件包信息
+    更新软件包信息（描述或名称）
     ---
     tags:
       - 软件包管理
@@ -194,12 +202,12 @@ def update_package(package_id):
         schema:
           type: object
           properties:
-            status:
-              type: integer
-              description: 状态码
             comment:
               type: string
-              description: 更新后的描述
+              description: 更新后的描述（可选）
+            name:
+              type: string
+              description: 更新后的名称（可选）
     responses:
       200:
         description: 更新成功
@@ -210,17 +218,24 @@ def update_package(package_id):
               type: string
               example: "Package updated successfully"
       400:
-        description: 无效请求
+        description: 无效请求（未提供任何可更新字段）
     """
-    data = request.json
-    if not data:
-        return jsonify({'error': 'No data provided'}), 400
-    
-    if 'status' in data:
-        PackageRepository.update_status(package_id, data['status'])
-    
+    data = request.get_json()
+    if not data or not any(key in data for key in ['comment', 'name']):
+        return jsonify({'error': '必须提供 comment 或 name 至少一个字段'}), 400
+
+    # 动态更新提供的字段
+    update_data = {}
     if 'comment' in data:
-        PackageRepository.update_comment(package_id, data['comment'])
+        update_data['comment'] = data['comment']
+    if 'name' in data:
+        update_data['name'] = data['name']
+
+
+    PackageRepository.update_package_info(
+        package_id=package_id,
+        **update_data
+    )
     
     return jsonify({'message': 'Package updated successfully'})
 
@@ -313,6 +328,111 @@ def delete_package(package_id):
             "success": False,
             "message": f"Delete failed: {str(e)}"
         }), 500
+
+@package_bp.route('/<int:package_id>', methods=['GET'])
+def get_package_by_id(package_id):
+    """
+    获取指定ID的软件包详情
+    ---
+    tags:
+      - 软件包管理
+    parameters:
+      - name: package_id
+        in: path
+        type: integer
+        required: true
+        description: 软件包ID
+    responses:
+      200:
+        description: 软件包详情
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: true
+            package:
+              $ref: '#/definitions/Package'
+      404:
+        description: 软件包不存在
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            message:
+              type: string
+              example: "Package not found"
+      500:
+        description: 服务器错误
+        schema:
+          type: object
+          properties:
+            success:
+              type: boolean
+              example: false
+            message:
+              type: string
+              example: "Internal server error"
+    """
+    try:
+        # 1. 从数据库获取软件包
+        print("@@@@@",package_id)
+        package = PackageRepository.get(package_id)
+
+        # print(package)
+        
+        if not package:
+            return jsonify({
+                'success': False,
+                'message': f'Package with ID {package_id} not found'
+            }), 404
+        
+        # 2. 生成下载URL（如果有OSS存储）
+        download_url = None
+        # print(package.oss_key)
+        if package.oss_key:
+            try:
+                rst = get_download_url(package.oss_key)
+                download_url = rst['url']
+                # print(rst,download_url)
+            except Exception as e:
+                current_app.logger.error(f"Failed to generate download URL: {str(e)}")
+        
+        plist_url = None
+
+        if package.system == 'ios':
+            plist_url = f"itms-services://?action=download-manifest&url=https://oss.superrabbithero.xyz/packages/plists/{package.oss_key[9:-4]}.plist"
+        
+        # 3. 构造响应数据
+        package_data = {
+            'id': package.id,
+            'name': package.name,
+            'appname':package.appname,
+            'package_name': package.package_name,
+            'version': package.version,
+            'size': package.size,
+            'system': package.system,
+            'ar': package.ar,
+            'create_time': package.create_time.isoformat() if package.create_time else None,
+            'comment': package.comment,
+            'download_url': download_url,
+            'icon_url': package.icon.url,
+            'plist_url': plist_url
+        }
+        
+        return jsonify({
+            'success': True,
+            'package': package_data
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error getting package {package_id}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': 'Internal server error'
+        }), 500
+    
 
 @package_bp.route('/versions', methods=['GET'])
 def get_version_list():
