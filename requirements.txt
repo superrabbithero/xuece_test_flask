@@ -1,0 +1,12 @@
+alembic==1.15.2
+aliyun-python-sdk-core==2.16.0
+aliyun-python-sdk-kms==2.16.5
+aliyun-python-sdk-sts==3.1.2
+dotenv==0.9.9
+flasgger==0.9.7.1
+Flask==3.1.0
+flask-cors==5.0.1
+Flask-Migrate==4.1.0
+Flask-SQLAlchemy==3.1.1
+PyMySQL==1.1.1
+SQLAlchemy==2.0.40

@@ -3,7 +3,7 @@ from ..repositories.package_repository import PackageRepository
 from ..repositories.icon_repository import IconRepository
 import os
 from datetime import datetime
-from androguard.core.bytecodes import apk
+# from androguard.core.bytecodes import apk
 import plistlib
 import zipfile
 import time
@@ -581,40 +581,9 @@ def generate_download_link():
     
     return jsonify({'link': f"{base_url}/{filename}"})
 
-# Helper functions (无需Swagger注释)
-def parse_package_metadata(file_path, filename):
-    """解析安装包元数据"""
-    metadata = {}
-    
-    if filename.endswith('.apk'):
-        a = apk.APK(file_path)
-        return {
-            'package_name': a.get_package(),
-            'version': a.get_androidversion_name(),
-            'system': 'android',
-            'ar': check_apk_architecture(file_path)
-        }
-    
-    elif filename.endswith('.ipa'):
-        plist_path = extract_info_plist(file_path)
-        with open(plist_path, 'rb') as f:
-            plist_data = plistlib.load(f)
-        
-        return {
-            'package_name': plist_data['CFBundleIdentifier'],
-            'version': plist_data['CFBundleShortVersionString'],
-            'system': 'ios'
-        }
-    
-    return metadata
 
-def handle_plist_deletion(filename):
-    """删除IPA关联的plist文件"""
-    gitapi = giteeAPI()
-    plist_name = filename.replace('.ipa', '.plist')
-    
-    if sha := gitapi.getfilesha(plist_name):
-        gitapi.deletefile(plist_name, sha)
+
+
 
 def base64_to_png(base64_data, output_path):
     """
