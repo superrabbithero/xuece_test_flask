@@ -14,8 +14,9 @@ class Config:
     DB_NAME = os.getenv('DB_NAME', 'appmanage')
     DB_USER = os.getenv('DB_USER', 'root')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '123456')
+    encoded_password = quote_plus(password)
     
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
+    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
     # 连接池配置
     SQLALCHEMY_POOL_SIZE = 5          # 连接池大小
