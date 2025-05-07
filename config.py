@@ -15,7 +15,7 @@ class Config:
     DB_NAME = os.getenv('DB_NAME', 'appmanage')
     DB_USER = os.getenv('DB_USER', 'root')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '123456')
-    encoded_password = quote_plus(password)
+    encoded_password = quote_plus(DB_PASSWORD)
     
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{encoded_password}@{DB_HOST}:{DB_PORT}/{DB_NAME}?charset=utf8mb4"
 
