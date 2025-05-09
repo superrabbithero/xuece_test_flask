@@ -121,32 +121,32 @@ def create_package():
         package_info = request.get_json()
 
         icon_data = package_info['icon']
-
-        icon_name = hashlib.md5(icon_data.encode()).hexdigest()
-        # print(icon_data)
-        # print(icon_name)
-
         icon_id = None
 
-        if IconRepository.get_id_by_name(icon_name):
-          icon_id = IconRepository.get_id_by_name(icon_name)
-        else:
-          os.makedirs('temp', exist_ok=True)
-          temp_file = f'temp/{icon_name}.png'
-          
-          # 保存为临时文件
-          base64_to_png(icon_data, temp_file)
-          
-          # 上传到OSS
-          oss_url = upload_to_oss(temp_file,f'package_icons/{icon_name}.png')
+        if icon_data:
+          icon_name = hashlib.md5(icon_data.encode()).hexdigest()
+          # print(icon_data)
+          # print(icon_name)
 
-          icon = {'name':icon_name,'url':oss_url}
-          icon_id = IconRepository.create(icon).id
-          # 清理临时文件
-          os.remove(temp_file)
+          if IconRepository.get_id_by_name(icon_name):
+            icon_id = IconRepository.get_id_by_name(icon_name)
+          else:
+            os.makedirs('temp', exist_ok=True)
+            temp_file = f'temp/{icon_name}.png'
+            
+            # 保存为临时文件
+            base64_to_png(icon_data, temp_file)
+            
+            # 上传到OSS
+            oss_url = upload_to_oss(temp_file,f'package_icons/{icon_name}.png')
+
+            icon = {'name':icon_name,'url':oss_url}
+            icon_id = IconRepository.create(icon).id
+            # 清理临时文件
+            os.remove(temp_file)
         
         # 检查必填字段
-        required_fields = ['version', 'name', 'size', 'system', 'package_name', 'oss_key']
+        required_fields = ['version', 'name', 'size', 'system', 'package_name','oss_key']
         missing_fields = [field for field in required_fields if field not in package_info]
         if missing_fields:
             return jsonify({'error': f'Missing required fields: {", ".join(missing_fields)}'}), 400
@@ -161,7 +161,7 @@ def create_package():
             'comment': package_info.get('comment', ''),
             'ar': package_info.get('ar', 'x64'),
             'status': 0,
-            'package_name': package_info['package_name'],
+            'package_name': package_info['package_name'] ,
             'oss_key': package_info['oss_key'],
             'icon_id': icon_id
         }
