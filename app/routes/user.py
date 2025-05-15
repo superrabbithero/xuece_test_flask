@@ -161,7 +161,7 @@ def login():
         user = UserRepository.get_by_user_name(user_name)
         print(user)
         if not user or not check_password_hash(user.password, password):
-            return jsonify({'error': f'Invalid credentials{user.password}{password}'}), 401
+            return jsonify({'error': f'Invalid credentials'}), 401
 
         # 生成JWT Token
         token = generate_token(user.id)
