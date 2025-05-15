@@ -5,3 +5,6 @@ def init_routes(app):
 
     from .oss import oss_bp
     app.register_blueprint(oss_bp, url_prefix='/api/oss')
+
+    from .user import user_bp
+    app.register_blueprint(user_bp, url_prefix='/api/user')

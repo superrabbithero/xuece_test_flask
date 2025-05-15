@@ -16,6 +16,8 @@ from app.utils.package_utils import (
 )
 from app.utils.oss_utils import (delete_oss_file,restore_oss_file,upload_to_oss,get_download_url,createplist)
 
+from app.utils.auth import  token_required
+
 import hashlib
 
 package_bp = Blueprint('package', __name__, url_prefix='/api/packages')
@@ -474,6 +476,7 @@ def get_version_list():
     return jsonify({'versions': versions})
 
 @package_bp.route('/search', methods=['GET'])
+@token_required
 def search_packages():
     """
     分页搜索软件包

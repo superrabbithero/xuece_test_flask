@@ -33,7 +33,19 @@ def create_app(config_class='config.DevelopmentConfig'):
         "title": "Package Management API",
         "uiversion": 3  # 使用Swagger UI 3
     }
-    Swagger(app, config=swagger_config)  # 初始化
+
+    SWAGGER_TEMPLATE = {
+        "securityDefinitions": {
+            "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "JWT 认证格式: Bearer <token>"
+            }
+        }
+    }
+
+    Swagger(app, config=swagger_config, template=SWAGGER_TEMPLATE)  # 初始化
 
     # 3. 最后注册蓝图
     from .routes import init_routes

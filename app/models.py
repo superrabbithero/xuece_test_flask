@@ -118,7 +118,6 @@ class Icon(db.Model):
     name = db.Column(db.String(100), unique=True, nullable=False, comment='md5名称')
     
     
-    
     def to_dict(self):
         """
         将模型转换为字典格式
@@ -126,8 +125,32 @@ class Icon(db.Model):
         return {
             'id': self.id,
             'url': self.url,
-            'name': self.name,
+            'name': self.name
         }
 
+class User(db.Model):
+    """
+    用户模型
+    """
+    __tablename__ = 'user'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String(50),unique=True, nullable=False, comment='用户名')
+    password = db.Column(db.String(255),  nullable=False, comment='密码')
+    phone = db.Column(db.String(20), unique=True, nullable=True, comment='手机号')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow , comment='创建时间')
+
+    
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'user_name': self.user_name,
+            'password': self.password,
+            'phone': self.phone,
+            'created_at': self.created_at
+        }
 
     
