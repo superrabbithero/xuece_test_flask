@@ -156,13 +156,14 @@ def login():
         if not user_name or not password:
             return jsonify({'error': 'Username and password are required'}), 400
 
-        print("@@@")
+        # print("@@@")
         # 验证用户
         user = UserRepository.get_by_user_name(user_name)
-        print(user)
-        if not user or not check_password_hash(user.password, password):
-            return jsonify({'error': f'Invalid credentials'}), 401
-
+        # print(user)
+        if not user:
+            return jsonify({'error': f'用户名不存在'}), 404
+        if not check_password_hash(user.password, password):
+            return jsonify({'error': f'密码错误'}), 401
         # 生成JWT Token
         token = generate_token(user.id)
 
