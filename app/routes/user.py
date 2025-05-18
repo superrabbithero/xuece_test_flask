@@ -163,7 +163,7 @@ def login():
         if not user:
             return jsonify({'error': f'用户名不存在'}), 404
         if not check_password_hash(user.password, password):
-            return jsonify({'error': f'密码错误'}), 401
+            return jsonify({'error': f'密码错误'}), 402
         # 生成JWT Token
         token = generate_token(user.id)
 
