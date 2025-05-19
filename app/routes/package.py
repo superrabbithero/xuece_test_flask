@@ -39,6 +39,7 @@ def get_ip_endpoint():
     return get_ip_and_port()
 
 @package_bp.route('/', methods=['POST'])
+@token_required
 def create_package():
     """
     创建软件包记录
@@ -187,6 +188,7 @@ def create_package():
 
 
 @package_bp.route('/<int:package_id>', methods=['PUT'])
+@token_required
 def update_package(package_id):
     """
     更新软件包信息（描述或名称）
@@ -476,7 +478,6 @@ def get_version_list():
     return jsonify({'versions': versions})
 
 @package_bp.route('/search', methods=['GET'])
-@token_required
 def search_packages():
     """
     分页搜索软件包
