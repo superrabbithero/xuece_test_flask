@@ -34,6 +34,8 @@ class Config:
     OSS_ROLE_ARN = os.getenv('OSS_ROLE_ARN')  # RAM 角色 ARN
     OSS_TOKEN_EXPIRE = 900  # 临时凭证有效期（秒，建议 15 分钟）
 
+    APP_ENV = os.getenv('APP_ENV', 'production')  # 默认为生产环境
+
 
     
 class DevelopmentConfig(Config):

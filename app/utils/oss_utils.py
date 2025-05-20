@@ -157,11 +157,13 @@ def upload_to_oss(file_path, object_name=None):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         object_name = f"images/{timestamp}.png"
     
+    if Config.APP_ENV != 'production':
+        object_name = f"test/{object_name}"
     # 上传文件
     with open(file_path, 'rb') as f:
         bucket.put_object(object_name, f)
     
-    # print(f"https://{Config.OSS_BUCKET}.oss-{Config.OSS_REGION}.aliyuncs.com/{object_name}")
+    print("@@@@@@", object_name)
 
     # 返回可访问的URL
     return f"https://{Config.OSS_BUCKET}.oss-{Config.OSS_REGION}.aliyuncs.com/{object_name}"
@@ -191,7 +193,8 @@ def get_download_url(oss_key):
 def createplist(oss_key, bundle_id, version, apptitle):
     print("上传plist到OSS")
     
-    filename = oss_key[9:-4] + ".plist"
+    filename = (oss_key[14:-4] + ".plist") if Config.APP_ENV != 'production' else (oss_key[9:-4] + ".plist")
+
     print(filename)
     
     # 生成plist内容
@@ -238,10 +241,13 @@ def createplist(oss_key, bundle_id, version, apptitle):
     try:
         # 获取OSS bucket
         bucket = get_bucket()
+
+        base_path = "test/" if Config.APP_ENV != 'production' else ""
         
         # 上传文件到OSS
+        print(f"{base_path}packages/plists/{filename}")
         bucket.put_object(
-            key='packages/plists/' + filename,  # 文件在OSS中的路径+文件名
+            key = f"{base_path}packages/plists/{filename}",
             data=content,             # 文件内容
             headers={
                 'Content-Type': 'application/x-plist'  # 设置正确的Content-Type
