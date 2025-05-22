@@ -23,28 +23,28 @@ class PackageRepository:
         db.session.commit()
         return package
 
-    @staticmethod
-    def update_status(package_id, status):
-        """更新包状态"""
-        rows_updated = Package.query.filter_by(id=package_id).update(
-            {'status': status},
-            synchronize_session=False
-        )
-        db.session.commit()
-        return rows_updated
+    # @staticmethod
+    # def update_status(package_id, status):
+    #     """更新包状态"""
+    #     rows_updated = Package.query.filter_by(id=package_id).update(
+    #         {'status': status},
+    #         synchronize_session=False
+    #     )
+    #     db.session.commit()
+    #     return rows_updated
+
+    # @staticmethod
+    # def update_comment(package_id, comment):
+    #     """更新包描述"""
+    #     Package.query.filter_by(id=package_id).update(
+    #         {'comment': comment},
+    #         synchronize_session=False
+    #     )
+    #     db.session.commit()
+
 
     @staticmethod
-    def update_comment(package_id, comment):
-        """更新包描述"""
-        Package.query.filter_by(id=package_id).update(
-            {'comment': comment},
-            synchronize_session=False
-        )
-        db.session.commit()
-
-
-    @staticmethod
-    def update_package_info(package_id, comment=None, name=None):
+    def update_package_info(package_id, comment=None, name=None, is_debug=None):
         """
         更新包信息（描述或名称）
         参数:
@@ -57,9 +57,11 @@ class PackageRepository:
             update_data['comment'] = comment
         if name is not None:
             update_data['name'] = name
+        if is_debug is not None:
+            update_data['is_debug'] = is_debug
 
         if not update_data:
-            raise ValueError("至少需要提供 comment 或 name 中的一个参数")
+            raise ValueError("至少需要提供 comment 或 name 或is_debug中的一个参数")
 
         Package.query.filter_by(id=package_id).update(
             update_data,

@@ -14,7 +14,8 @@ class Package(db.Model):
     size = db.Column(db.BigInteger, nullable=False, comment='文件大小(字节)')
     system = db.Column(db.String(64), nullable=False, comment='适用系统')
     create_time = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, comment='创建时间')
-    status = db.Column(db.SmallInteger, default=0, nullable=False, comment='状态(0-正常)')
+    # status = db.Column(db.SmallInteger, default=0, nullable=False, comment='状态(0-正常)')
+    is_debug = db.Column(db.Boolean, default=True, nullable=False, comment="是否为调试包")
     comment = db.Column(db.Text, default='', comment='备注信息')
     ar = db.Column(db.String(256), nullable=True, comment='架构信息')
     package_name = db.Column(db.String(256), nullable=False, comment='包名')
@@ -41,7 +42,8 @@ class Package(db.Model):
             'size': self.size,
             'system': self.system,
             'create_time': self.create_time.isoformat() if self.create_time else None,
-            'status': self.status,
+            'is_debug': self.is_debug,
+            # 'status': self.status,
             'comment': self.comment,
             'ar': self.ar,
             'package_name': self.package_name,
@@ -63,7 +65,8 @@ class Package(db.Model):
             size=data['size'],
             system=data['system'],
             create_time=data.get('create_time', datetime.utcnow()),
-            status=data.get('status', 0),
+            # status=data.get('status', 0),
+            is_debug=data.get('is_debug', False),
             comment=data.get('comment', ''),
             ar=data.get('ar'),
             package_name=data.get('package_name'),
