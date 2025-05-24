@@ -163,7 +163,6 @@ def create_package():
             'create_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             'comment': package_info.get('comment', ''),
             'ar': package_info.get('ar', 'x64'),
-            'status': 0,
             'package_name': package_info['package_name'] ,
             'oss_key': package_info['oss_key'],
             'icon_id': icon_id
@@ -225,8 +224,8 @@ def update_package(package_id):
         description: 无效请求（未提供任何可更新字段）
     """
     data = request.get_json()
-    if not data or not any(key in data for key in ['comment', 'name']):
-        return jsonify({'error': '必须提供 comment 或 name 至少一个字段'}), 400
+    if not data or not any(key in data for key in ['comment', 'name', 'is_debug']):
+        return jsonify({'error': '必须提供 comment 或 name 或 is_debug 至少一个字段'}), 400
 
     # 动态更新提供的字段
     update_data = {}
@@ -234,6 +233,8 @@ def update_package(package_id):
         update_data['comment'] = data['comment']
     if 'name' in data:
         update_data['name'] = data['name']
+    if 'is_debug' in data:
+        update_data['is_debug'] = data['is_debug']
 
 
     PackageRepository.update_package_info(
@@ -409,20 +410,12 @@ def get_package_by_id(package_id):
         if package.system == 'ios':
             plist_url = f"itms-services://?action=download-manifest&url=https://oss.superrabbithero.xyz/packages/plists/{package.oss_key[9:-4]}.plist"
         
+        # package.create_time = package.create_time.isoformat()
+
         # 3. 构造响应数据
         package_data = {
-            'id': package.id,
-            'name': package.name,
-            'appname':package.appname,
-            'package_name': package.package_name,
-            'version': package.version,
-            'size': package.size,
-            'system': package.system,
-            'ar': package.ar,
-            'create_time': package.create_time.isoformat() if package.create_time else None,
-            'comment': package.comment,
+            **package.to_dict(),
             'download_url': download_url,
-            'icon_url': package.icon.url,
             'plist_url': plist_url
         }
         
