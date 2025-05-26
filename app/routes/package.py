@@ -488,9 +488,9 @@ def search_packages():
       - name: version
         in: query
         type: string
-      - name: ar
+      - name: is_debug
         in: query
-        type: string
+        type: Boolean
       - name: page
         in: query
         type: integer
@@ -523,7 +523,7 @@ def search_packages():
             'appname': request.args.get('appname', 'default'),
             'system': request.args.get('system'),
             'version': request.args.get('version'),
-            'ar': request.args.get('ar'),
+            'is_debug': request.args.get('is_debug'),
             'page': int(request.args.get('page', 1)),
             'per_page': int(request.args.get('per_page', 10))
         }

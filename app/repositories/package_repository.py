@@ -82,7 +82,7 @@ class PackageRepository:
         return [v[0] for v in query.all()]
 
     @staticmethod
-    def get_paginated_packages(appname, system=None, version=None, ar=None, page=1, per_page=10):
+    def get_paginated_packages(appname, system=None, version=None, is_debug=None, page=1, per_page=10):
         """分页查询包列表"""
         query = Package.query.filter(Package.appname == appname)
         
@@ -92,8 +92,8 @@ class PackageRepository:
             filters.append(Package.system == system)
         if version and version != '全部':
             filters.append(Package.version == version)
-        if ar and ar != '全部':
-            filters.append(Package.ar == ar)
+        if is_debug and is_debug != '全部':
+            filters.append(Package.is_debug == is_debug)
             
         if filters:
             query = query.filter(and_(*filters))
