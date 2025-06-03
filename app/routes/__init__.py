@@ -8,3 +8,7 @@ def init_routes(app):
 
     from .user import user_bp
     app.register_blueprint(user_bp, url_prefix='/api/user')
+
+    from .xuece import xuece_bp
+    app.register_blueprint(xuece_bp, url_prefix='/api/xuece')
+
