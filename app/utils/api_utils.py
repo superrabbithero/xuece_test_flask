@@ -89,24 +89,20 @@ class XueceAPIs:
 
         data = make_api_request('get', url)
 
-        print(data)
-
         try:
             self.headers['Authtoken'] = data['data']['authtoken']
             self.headers['Xc-App-User-Schoolid'] = f"{data['data']['user']['schoolId']}"
         except KeyError as e:
             raise APIError(f"Missing expected field in response: {str(e)}")
 
-        print("login:@@@@@@"+self.headers['Authtoken'])
-
 
     @handle_api_errors
     def get_answercard(self, card_type='exam' , paper_id='1'):
 
-        print("get_answercard:@@@@@@"+self.headers['Authtoken'])
         url = f"{self.base_path}/api/examcenter/teacher/answercard/editinfo?exampaperId={paper_id}"
         if card_type == "classwork":
             url = f"{self.base_path}/api/classworkcenter/nnauth/claswork/answercardpreview?classworkId={paper_id}"
 
         return make_api_request('get', url, headers=self.headers)
+
 
