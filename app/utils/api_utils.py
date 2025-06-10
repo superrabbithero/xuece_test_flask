@@ -106,3 +106,27 @@ class XueceAPIs:
         return make_api_request('get', url, headers=self.headers)
 
 
+
+
+class BaiLianAPIs:
+    @handle_api_errors
+    def image_generation(self, api_key, data):
+        headers = {
+          "X-DashScope-Async": "enable",
+          "Authorization": f"Bearer {api_key}",
+          "Content-Type": "application/json"
+        }
+
+        url = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/image-generation/generation'
+
+        return make_api_request('post', url, json=data, headers=headers)
+
+    @handle_api_errors
+    def get_task(self, api_key, task_id):
+        headers = {
+          "Authorization": f"Bearer {api_key}"
+        }
+
+        url = f"https://dashscope.aliyuncs.com/api/v1/tasks/{task_id}"
+
+        return make_api_request('get', url, headers=headers)

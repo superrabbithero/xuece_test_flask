@@ -12,3 +12,6 @@ def init_routes(app):
     from .xuece import xuece_bp
     app.register_blueprint(xuece_bp, url_prefix='/api/xuece')
 
+    from .bailian import bailian_bp
+    app.register_blueprint(bailian_bp, url_prefix='/api/bailian')
+
