@@ -5,13 +5,11 @@ bailian_bp = Blueprint('bailian', __name__)
 
 @bailian_bp.route('/image_generation', methods=['POST'])
 def image_generation():
-	json_info = request.get_json()
-	data = json_info["data"]
-	key = json_info["api_key"]
+	data = request.get_json()
 
 	api = BaiLianAPIs()
 
-	rst = api.image_generation(key, data)
+	rst = api.image_generation(data)
 
 	return jsonify(rst), 200
 
@@ -19,8 +17,7 @@ def image_generation():
 def get_task(task_id):
 
 	api = BaiLianAPIs()
-	print("task_id")
-	key = ""
-	rst = api.get_task(key, task_id)
+
+	rst = api.get_task(task_id)
 
 	return jsonify(rst), 200

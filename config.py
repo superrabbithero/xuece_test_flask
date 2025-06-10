@@ -36,7 +36,7 @@ class Config:
 
     APP_ENV = os.getenv('APP_ENV', 'production')  # 默认为生产环境
 
-
+    AI_API_KEY = os.getenv('AI_API_KEY')
 
     
 class DevelopmentConfig(Config):

@@ -70,6 +70,8 @@ base_path_dict = {
     "test2":"https://xuece-xqdsj-stagingtest1.unisolution.cn",
     "pro":"https://xuece-xqdsj-stagingtest1.unisolution.cn"
 }
+
+from config import Config
         
 class XueceAPIs:
 
@@ -110,10 +112,10 @@ class XueceAPIs:
 
 class BaiLianAPIs:
     @handle_api_errors
-    def image_generation(self, api_key, data):
+    def image_generation(self, data):
         headers = {
           "X-DashScope-Async": "enable",
-          "Authorization": f"Bearer {api_key}",
+          "Authorization": f"Bearer {Config.AI_API_KEY}",
           "Content-Type": "application/json"
         }
 
@@ -122,9 +124,9 @@ class BaiLianAPIs:
         return make_api_request('post', url, json=data, headers=headers)
 
     @handle_api_errors
-    def get_task(self, api_key, task_id):
+    def get_task(self, task_id):
         headers = {
-          "Authorization": f"Bearer {api_key}"
+          "Authorization": f"Bearer {Config.AI_API_KEY}"
         }
 
         url = f"https://dashscope.aliyuncs.com/api/v1/tasks/{task_id}"
