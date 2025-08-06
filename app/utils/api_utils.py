@@ -124,6 +124,16 @@ class BaiLianAPIs:
         return make_api_request('post', url, json=data, headers=headers)
 
     @handle_api_errors
+    def text2image_v2(self, task_id):
+        headers = {
+          "Authorization": f"Bearer {Config.AI_API_KEY}"
+        }
+
+        url = f"https://dashscope.aliyuncs.com/api/v1/tasks/{task_id}"
+
+        return make_api_request('get', url, headers=headers)
+
+    @handle_api_errors
     def get_task(self, task_id):
         headers = {
           "Authorization": f"Bearer {Config.AI_API_KEY}"
