@@ -1,4 +1,5 @@
 from datetime import datetime
+from sqlalchemy import func
 from app import db
 
 class Package(db.Model):
@@ -157,3 +158,143 @@ class User(db.Model):
         }
 
     
+class Documents(db.Model):
+    """
+    文档模型
+    """
+    __tablename__ = 'documents'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False,  comment='用户id')
+    short_content = db.Column(db.String(256), comment='短内容')
+    oss_key = db.Column(db.String(256), nullable=False, comment='oss的key值')
+    status = db.Column(db.Integer, default=0, nullable=False, comment='文档状态0-3,草稿/审核中/未通过/已发布')
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='SET NULL'),nullable=True)
+    created_at = db.Column(db.DateTime, server_default=func.now() , comment='创建时间')
+    updated_at = db.Column(db.DateTime, server_default=func.now() ,onupdate=func.now(), comment='更新时间')
+
+    
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'short_content': self.short_content,
+            'oss_key': self.oss_key,
+            'status': self.status,
+            'category_id': self.category_id,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+class Categories(db.Model):
+    """
+    分类模型
+    """
+    __tablename__ = 'categories'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(20), nullable=False, comment='分类名称')
+    parent_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='CASCADE'), default=None, comment='父节点id')
+    path = db.Column(db.String(200), comment='索引路径')
+
+    
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'parent_id': self.parent_id,
+            'path': self.path
+        }
+
+class Tags(db.Model):
+    """
+    标签模型
+    """
+    __tablename__ = 'tags'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(20), nullable=False, comment='标签名称')
+
+    
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'name': self.name
+        }
+
+class doc_tag(db.Model):
+    """
+    文档标签模型
+    """
+    __tablename__ = 'doc_tag'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id', ondelete='CASCADE'))
+    doc_id = db.Column(db.Integer, db.ForeignKey('documents.id', ondelete='CASCADE'))
+
+    
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'tag_id': self.tag_id,
+            'doc_id': self.doc_id
+        }
+
+class Images(db.Model):
+    """
+    图片模型
+    """
+
+    __tablename__ = 'images'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    oss_key = db.Column(db.String(256), nullable=False, comment='oss的key值')
+    uploaded = db.Column(db.Boolean, default=False, comment="是否成功上传oss")
+    in_use = db.Column(db.Boolean, default=False, comment="使用到")
+
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'oss_key': self.oss_key,
+            'uploaded': self.uploaded,
+            'in_use': self.in_use
+        }
+
+
+class doc_image(db.Model):
+
+    """
+    文档图片关联模型
+    """
+
+    __tablename__ = 'doc_image'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    image_id = db.Column(db.Integer, db.ForeignKey('images.id', ondelete='CASCADE'))
+    doc_id = db.Column(db.Integer, db.ForeignKey('documents.id', ondelete='CASCADE'))
+
+    
+    def to_dict(self):
+        """
+        将模型转换为字典格式
+        """
+        return {
+            'id': self.id,
+            'image_id': self.image_id,
+            'doc_id': self.doc_id
+        }

@@ -15,3 +15,6 @@ def init_routes(app):
     from .bailian import bailian_bp
     app.register_blueprint(bailian_bp, url_prefix='/api/bailian')
 
+    from .documents import documents_bp
+    app.register_blueprint(documents_bp, url_prefix='/api/documents')
+

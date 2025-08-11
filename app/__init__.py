@@ -29,6 +29,22 @@ def create_app(config_class='config.DevelopmentConfig'):
                 "model_filter": lambda tag: True,
             }
         ],
+        "definitions": {
+            "DocumentCreate": {
+                "type": "object",
+                "required": ["user_id", "short_content", "oss_key"],
+                "properties": {
+                    "user_id": {"type": "integer"},
+                    "short_content": {"type": "string"},
+                    "oss_key": {"type": "string"},
+                    "category_id": {"type": "integer"},
+                    "tags_id": {
+                        "type": "array",
+                        "items": {"type": "integer"}
+                    }
+                }
+            }
+        },
         "static_url_path": "/flasgger_static",
         "title": "Package Management API",
         "uiversion": 3  # 使用Swagger UI 3
