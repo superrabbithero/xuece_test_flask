@@ -262,7 +262,7 @@ class Images(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     oss_key = db.Column(db.String(256), nullable=False, comment='oss的key值')
     uploaded = db.Column(db.Boolean, default=False, comment="是否成功上传oss")
-    in_use = db.Column(db.Boolean, default=False, comment="使用到")
+    in_use = db.Column(db.Boolean, default=False, comment="是否使用到")
 
     def to_dict(self):
         """

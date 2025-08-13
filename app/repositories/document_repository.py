@@ -26,14 +26,16 @@ class DocumentRepository:
         return doc
     
     @staticmethod
-    def update(doc_id: int, **kwargs) -> Optional[Documents]:
+    def update(**kwargs) -> Optional[Documents]:
         """更新文档信息"""
-        doc = Documents.query.get(doc_id)
+        doc = Documents.query.get(kwargs.get('id'))
         if not doc:
             return None
             
         for key, value in kwargs.items():
-            if hasattr(doc, key):
+            if key == 'id':
+                continue
+            if hasattr(doc, key) and value:
                 setattr(doc, key, value)
         
         doc.updated_at = datetime.utcnow()

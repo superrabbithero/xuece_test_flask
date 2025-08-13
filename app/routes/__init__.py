@@ -18,3 +18,6 @@ def init_routes(app):
     from .documents import documents_bp
     app.register_blueprint(documents_bp, url_prefix='/api/documents')
 
+    from .image import image_bp
+    app.register_blueprint(image_bp, url_prefix='/api/images')
+

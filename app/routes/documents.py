@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from datetime import datetime
+import uuid
 from app.repositories import (
     DocumentRepository, 
     CategoryRepository,
@@ -6,6 +8,13 @@ from app.repositories import (
 )
 
 documents_bp = Blueprint('documents', __name__, url_prefix='/api/documents')
+
+def ok(data=None, msg="ok"):
+    return jsonify({"code": 0, "msg": msg, "data": data or {}})
+
+
+def bad_request(msg="bad request", code=400):
+    return jsonify({"code": 1, "msg": msg}), code
 
 # 获取用户的文章
 @documents_bp.route('', methods=['GET'])
@@ -90,6 +99,97 @@ def get_documents():
         'current_page': result.page
     })
 
+@documents_bp.route("/detail", methods=["get"])
+def get_doc_by_id():
+    """
+    获取文档详情
+    ---
+    tags:
+      - 文档管理
+    parameters:
+      - name: id
+        in: query
+        require: true
+        type: integer
+    responses:
+      200:
+        description: 文档列表
+        schema:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/definitions/Document'
+            total:
+              type: integer
+              example: 100
+            pages:
+              type: integer
+              example: 10
+            current_page:
+              type: integer
+              example: 1
+    """
+    doc_id = request.args.get('id')
+    rst = DocumentRepository.get_by_id(doc_id)
+    return ok(rst.to_dict())
+
+@documents_bp.route("/reserve", methods=["POST"])
+def reserve_oss_key():
+    """
+    预留一个唯一的 OSS Key，并在本地入库
+    ---
+    tags:
+      - 文档管理
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            user_id:
+              type: integer
+            prefix:
+              type: string
+              description: OSS 目录前缀，默认 documents
+              example: uploads
+    responses:
+      200:
+        description: 预留成功
+        schema:
+          $ref: '#/definitions/Envelope_ImageReserve'
+      400:
+        description: 参数错误
+        schema:
+          $ref: '#/definitions/Envelope_Error'
+    """
+    payload = request.get_json(silent=True) or {}
+    prefix = payload.get("prefix") or "documents"
+    user_id = int(payload.get("user_id", None))
+    if not user_id:
+        return bad_request("user_id 必须非空")
+
+    date_str = int(datetime.now().timestamp()*1000)
+    print(date_str)
+    key = f"{prefix}/{user_id}/{date_str}_{uuid.uuid4().hex}.md"
+
+    success = DocumentRepository.create(
+      user_id=user_id,
+      oss_key=key,
+      short_content='',
+      status=0,
+      category_id=None)
+
+    return ok(
+        success.to_dict()
+    )
+
 @documents_bp.route('', methods=['POST'])
 def create_document():
     """
@@ -136,6 +236,58 @@ def create_document():
         return jsonify({'error': '创建文档失败'}), 404
     
     return jsonify({'message': '创建文档成功'}), 201
+
+@documents_bp.route('', methods=['PUT'])
+def update_document():
+    """
+    更新文档信息
+    ---
+    tags:
+      - 文档管理
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            status:
+              type: integer
+            category_id:
+              type: integer
+    responses:
+      200:
+        description: 更新成功
+        schema:
+          $ref: '#/definitions/Envelope_ImageReserve'
+      400:
+        description: 参数错误
+        schema:
+          $ref: '#/definitions/Envelope_Error'
+    """
+    payload = request.get_json(silent=True) or {}
+    doc_id = payload.get("id", None)
+    status = payload.get("status", None)
+    category_id = payload.get("category_id", None)
+    if not doc_id:
+        return bad_request("doc_id 必须非空")
+
+    success = DocumentRepository.update(
+      id=doc_id,
+      short_content='',
+      status=status,
+      category_id=category_id)
+
+    return ok(
+        success.to_dict()
+    )
+
 
 @documents_bp.route('/categories', methods=['GET'])
 def get_categories():
