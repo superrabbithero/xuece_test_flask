@@ -10,12 +10,13 @@ class DocumentRepository:
         return Documents.query.get(doc_id)
     
     @staticmethod
-    def create(user_id: int, oss_key: str, short_content: str = None, 
+    def create(user_id: int, oss_key: str, title:str = '新建文章', short_content: str = None, 
                status: int = 0, category_id: int = None) -> Documents:
         """创建新文档"""
         doc = Documents(
             user_id=user_id,
             oss_key=oss_key,
+            title=title,
             short_content=short_content,
             status=status,
             category_id=category_id
@@ -31,14 +32,14 @@ class DocumentRepository:
         doc = Documents.query.get(kwargs.get('id'))
         if not doc:
             return None
-            
+
         for key, value in kwargs.items():
             if key == 'id':
                 continue
             if hasattr(doc, key) and value:
                 setattr(doc, key, value)
         
-        doc.updated_at = datetime.utcnow()
+        doc.updated_at = db.func.now()
         db.session.commit()
         return doc
     
@@ -76,9 +77,10 @@ class DocumentRepository:
         """
         query = Documents.query.filter_by(user_id=user_id)
         
+        print(user_id,status,title,category_id,tag_ids)
         # 状态筛选
         if status is not None:
-            query = query.filter(Documents.status == status)
+            query = query.filter(Documents.status.in_(status))
         
         # 标题模糊搜索
         if title:
@@ -95,6 +97,7 @@ class DocumentRepository:
                          .group_by(Documents.id)\
                          .having(db.func.count(doc_tag.tag_id) >= 1)
         
+
         # 排序并分页
         return query.order_by(Documents.created_at.desc())\
                    .paginate(page=page, per_page=per_page, error_out=False)

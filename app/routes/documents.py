@@ -86,8 +86,8 @@ def get_documents():
         user_id=user_id,
         page=page,
         per_page=per_page,
-        status=request.args.get('status', type=int),
-        title=request.args.get('title'),
+        status=request.args.get('status',type=list),
+        title=request.args.get('title', ''),
         category_id=request.args.get('category_id', type=int),
         tag_ids=request.args.getlist('tag_id', type=int) or None
     )
@@ -98,6 +98,33 @@ def get_documents():
         'pages': result.pages,
         'current_page': result.page
     })
+
+@documents_bp.route("", methods=["delete"])
+def delete_package():
+    """
+    获取文档详情
+    ---
+    tags:
+      - 文档管理
+    parameters:
+      - name: id
+        in: query
+        require: true
+        type: integer
+    responses:
+      200:
+        description: 预留成功
+        schema:
+          $ref: '#/definitions/Envelope_ImageReserve'
+      400:
+        description: 参数错误
+        schema:
+          $ref: '#/definitions/Envelope_Error'
+        
+    """
+    doc_id = request.args.get('id')
+    rst = DocumentRepository.delete(doc_id)
+    return ok(rst)
 
 @documents_bp.route("/detail", methods=["get"])
 def get_doc_by_id():
@@ -155,6 +182,10 @@ def reserve_oss_key():
           properties:
             user_id:
               type: integer
+            title:
+              type: string
+            short_content:
+              type: string
             prefix:
               type: string
               description: OSS 目录前缀，默认 documents
@@ -172,17 +203,20 @@ def reserve_oss_key():
     payload = request.get_json(silent=True) or {}
     prefix = payload.get("prefix") or "documents"
     user_id = int(payload.get("user_id", None))
+    title = payload.get('title', '新建文章')
+    short_content = payload.get('short_content', '')
     if not user_id:
         return bad_request("user_id 必须非空")
 
     date_str = int(datetime.now().timestamp()*1000)
     print(date_str)
     key = f"{prefix}/{user_id}/{date_str}_{uuid.uuid4().hex}.md"
-
+    print(key)
     success = DocumentRepository.create(
       user_id=user_id,
       oss_key=key,
-      short_content='',
+      title=title,
+      short_content=short_content,
       status=0,
       category_id=None)
 
@@ -261,6 +295,8 @@ def update_document():
               type: integer
             category_id:
               type: integer
+            title:
+              type: string
     responses:
       200:
         description: 更新成功
@@ -275,11 +311,14 @@ def update_document():
     doc_id = payload.get("id", None)
     status = payload.get("status", None)
     category_id = payload.get("category_id", None)
+    title = payload.get("title", None)
+    print(payload,title)
     if not doc_id:
         return bad_request("doc_id 必须非空")
 
     success = DocumentRepository.update(
       id=doc_id,
+      title=title,
       short_content='',
       status=status,
       category_id=category_id)

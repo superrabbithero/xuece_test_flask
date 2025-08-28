@@ -167,6 +167,7 @@ class Documents(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False,  comment='用户id')
     short_content = db.Column(db.String(256), comment='短内容')
+    title = db.Column(db.String(100), comment='文章标题')
     oss_key = db.Column(db.String(256), nullable=False, comment='oss的key值')
     status = db.Column(db.Integer, default=0, nullable=False, comment='文档状态0-3,草稿/审核中/未通过/已发布')
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='SET NULL'),nullable=True)
@@ -182,6 +183,7 @@ class Documents(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'short_content': self.short_content,
+            'title': self.title,
             'oss_key': self.oss_key,
             'status': self.status,
             'category_id': self.category_id,
