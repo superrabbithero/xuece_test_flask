@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 import uuid
+from app.utils.auth import  token_required
 from app.repositories import (
     DocumentRepository, 
     CategoryRepository,
@@ -99,8 +100,10 @@ def get_documents():
         'current_page': result.page
     })
 
+
 @documents_bp.route("", methods=["delete"])
-def delete_package():
+@token_required
+def delete_document():
     """
     获取文档详情
     ---
@@ -162,7 +165,9 @@ def get_doc_by_id():
     rst = DocumentRepository.get_by_id(doc_id)
     return ok(rst.to_dict())
 
+
 @documents_bp.route("/reserve", methods=["POST"])
+@token_required
 def reserve_oss_key():
     """
     预留一个唯一的 OSS Key，并在本地入库
@@ -224,7 +229,9 @@ def reserve_oss_key():
         success.to_dict()
     )
 
+
 @documents_bp.route('', methods=['POST'])
+@token_required
 def create_document():
     """
     创建新文档
@@ -271,7 +278,9 @@ def create_document():
     
     return jsonify({'message': '创建文档成功'}), 201
 
+
 @documents_bp.route('', methods=['PUT'])
+@token_required
 def update_document():
     """
     更新文档信息

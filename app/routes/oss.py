@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify
 from app.utils.oss_utils import generate_sts_token, get_download_url
+from app.utils.auth import  token_required
 
 oss_bp = Blueprint('oss', __name__)
 
 @oss_bp.route('/sts-token', methods=['GET'])
+@token_required
 def get_sts_token():
     """
     提供给前端的临时凭证接口
