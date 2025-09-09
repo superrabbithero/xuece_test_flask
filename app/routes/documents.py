@@ -19,6 +19,7 @@ def bad_request(msg="bad request", code=400):
 
 # 获取用户的文章
 @documents_bp.route('', methods=['GET'])
+@token_required
 def get_documents():
     """
     获取文档列表
