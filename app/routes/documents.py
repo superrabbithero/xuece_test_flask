@@ -337,6 +337,66 @@ def update_document():
         success.to_dict()
     )
 
+@documents_bp.route('/publish', methods=['PUT'])
+@token_required
+def publish_document():
+    """
+    更新文档信息
+    ---
+    tags:
+      - 文档管理
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: false
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            status:
+              type: integer
+            cover_img:
+              type: String
+            short_content:
+              type: String
+    responses:
+      200:
+        description: 更新成功
+        schema:
+          $ref: '#/definitions/Envelope_ImageReserve'
+      400:
+        description: 参数错误
+        schema:
+          $ref: '#/definitions/Envelope_Error'
+    """
+    payload = request.get_json(silent=True) or {}
+    doc_id = payload.get("id", None)
+    status = payload.get("status", None)
+    short_content = payload.get("short_content", None)
+    cover_img = payload.get("cover_img", None)
+    print(payload,title)
+    if not doc_id:
+        return bad_request("doc_id 必须非空")
+    if not short_content:
+        return bad_request("short_content 必须非空")
+
+    success = DocumentRepository.update(
+      id=doc_id,
+      title=title,
+      short_content=short_content,
+      cover_img=cover_img,
+      status=status)
+
+    return ok(
+        success.to_dict()
+    )
+
+
 
 @documents_bp.route('/categories', methods=['GET'])
 def get_categories():

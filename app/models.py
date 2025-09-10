@@ -171,6 +171,7 @@ class Documents(db.Model):
     oss_key = db.Column(db.String(256), nullable=False, comment='oss的key值')
     status = db.Column(db.Integer, default=0, nullable=False, comment='文档状态0-3,草稿/审核中/未通过/已发布')
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='SET NULL'),nullable=True)
+    cover_img = db.Column(db.String(256), comment='oss路径')
     created_at = db.Column(db.DateTime, server_default=func.now() , comment='创建时间')
     updated_at = db.Column(db.DateTime, server_default=func.now() ,onupdate=func.now(), comment='更新时间')
 
@@ -187,6 +188,7 @@ class Documents(db.Model):
             'oss_key': self.oss_key,
             'status': self.status,
             'category_id': self.category_id,
+            'cover_img': self.cover_img,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
