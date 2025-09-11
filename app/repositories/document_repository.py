@@ -29,14 +29,17 @@ class DocumentRepository:
     @staticmethod
     def update(**kwargs) -> Optional[Documents]:
         """更新文档信息"""
+        print("开始写库")
         doc = Documents.query.get(kwargs.get('id'))
         if not doc:
+            print("id有误")
             return None
 
+        print(kwargs)
         for key, value in kwargs.items():
             if key == 'id':
                 continue
-            if hasattr(doc, key) and value:
+            if hasattr(doc, key) and value!=None:
                 setattr(doc, key, value)
         
         doc.updated_at = db.func.now()
@@ -54,7 +57,7 @@ class DocumentRepository:
         return False
     
     @staticmethod
-    def get_user_documents(
+    def get_documents(
         user_id: int,
         page: int = 1,
         per_page: int = 10,
@@ -75,7 +78,10 @@ class DocumentRepository:
         :param tag_ids: 标签ID列表（筛选包含任一标签的文档，可选）
         :return: Flask-SQLAlchemy Pagination对象
         """
-        query = Documents.query.filter_by(user_id=user_id)
+        query = Documents.query
+
+        if user_id:
+            query = Documents.query.filter_by(user_id=user_id)
         
         print(user_id,status,title,category_id,tag_ids)
         # 状态筛选

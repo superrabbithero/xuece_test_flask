@@ -84,11 +84,85 @@ def get_documents():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     
-    result = DocumentRepository.get_user_documents(
+    result = DocumentRepository.get_documents(
         user_id=user_id,
         page=page,
         per_page=per_page,
         status=request.args.get('status',type=list),
+        title=request.args.get('title', ''),
+        category_id=request.args.get('category_id', type=int),
+        tag_ids=request.args.getlist('tag_id', type=int) or None
+    )
+    
+    return jsonify({
+        'items': [doc.to_dict() for doc in result.items],
+        'total': result.total,
+        'pages': result.pages,
+        'current_page': result.page
+    })
+
+# 获取用户的文章
+@documents_bp.route('/home', methods=['GET'])
+def get_home_documents():
+    """
+    获取文档列表
+    ---
+    tags:
+      - 文档管理
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        default: 1
+        description: 页码
+      - name: per_page
+        in: query
+        type: integer
+        default: 10
+        description: 每页数量
+      - name: title
+        in: query
+        type: string
+        description: 标题关键词搜索
+      - name: category_id
+        in: query
+        type: integer
+        description: 分类ID筛选
+      - name: tag_id
+        in: query
+        type: array
+        items:
+          type: integer
+        collectionFormat: multi
+        description: 标签ID(可传多个)
+    responses:
+      200:
+        description: 文档列表
+        schema:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/definitions/Document'
+            total:
+              type: integer
+              example: 100
+            pages:
+              type: integer
+              example: 10
+            current_page:
+              type: integer
+              example: 1
+    """
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    
+    result = DocumentRepository.get_documents(
+        user_id=None,
+        page=page,
+        per_page=per_page,
+        status=[3],
         title=request.args.get('title', ''),
         category_id=request.args.get('category_id', type=int),
         tag_ids=request.args.getlist('tag_id', type=int) or None
@@ -379,7 +453,7 @@ def publish_document():
     status = payload.get("status", None)
     short_content = payload.get("short_content", None)
     cover_img = payload.get("cover_img", None)
-    print(payload,title)
+    print(payload)
     if not doc_id:
         return bad_request("doc_id 必须非空")
     if not short_content:
@@ -387,7 +461,6 @@ def publish_document():
 
     success = DocumentRepository.update(
       id=doc_id,
-      title=title,
       short_content=short_content,
       cover_img=cover_img,
       status=status)

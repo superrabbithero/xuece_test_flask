@@ -159,7 +159,7 @@ def login():
         # print("@@@")
         # 验证用户
         user = UserRepository.get_by_user_name(user_name)
-        # print(user)
+        print(user.to_dict())
         if not user:
             return jsonify({'error': f'用户名不存在'}), 404
         if not check_password_hash(user.password, password):
@@ -169,7 +169,11 @@ def login():
 
         return jsonify({
             'token': token,
-            'expires_in': TOKEN_EXPIRE_HOURS * 3600
+            'expires_in': TOKEN_EXPIRE_HOURS * 3600,
+            'user_info':{
+              'name': user.user_name,
+              'id': user.id
+            }
         }), 200
 
     except Exception as e:
