@@ -67,7 +67,7 @@ def make_api_request(method, url, **kwargs):
 
 base_path_dict = {
     "test1":"https://xuece-xqdsj-stagingtest1.unisolution.cn",
-    "test2":"https://xuece-xqdsj-stagingtest1.unisolution.cn",
+    "test2":"https://xuece-xqdsj-stagingtest2.unisolution.cn",
     "pro":"https://xuece-xqdsj-stagingtest1.unisolution.cn"
 }
 
@@ -89,7 +89,11 @@ class XueceAPIs:
         """获取登录信息"""
         url = f"{self.base_path}/api/usercenter/nnauth/user/login?username={username}&encryptpwd={pwd}&clienttype=BROWSER&clientversion=1.25.7&systemversion=chrome122.0.0.0"
 
+        print(username,pwd)
+
         data = make_api_request('get', url)
+
+        print(data)
 
         try:
             self.headers['Authtoken'] = data['data']['authtoken']

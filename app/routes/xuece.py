@@ -37,7 +37,7 @@ def get_answercard():
         
     xuece_api = XueceAPIs(env)
 
-    xuece_api.login('markethuang:xctest','c34dd995a8132605764a9347dae6e8ca')
+    xuece_api.login('markethuang:xctest','3a352bebcc6ac5cc2c6611d751727729')
 
     result = xuece_api.get_answercard(card_type, paper_id)
 
