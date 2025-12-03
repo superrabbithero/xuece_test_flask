@@ -26,18 +26,31 @@ def get_bucket():
         Config.OSS_ACCESS_KEY_SECRET
     )
 
-    endpoint = f"http://oss-{Config.OSS_REGION}.aliyuncs.com"
-    # print(auth,endpoint)
-    return Bucket(auth, endpoint, Config.OSS_BUCKET)
+    endpoint = f"https://oss-{Config.OSS_REGION}.aliyuncs.com"
+    print(f"OSS Endpoint: {endpoint}")  # 调试用
+
+    bucket = Bucket(auth, endpoint, Config.OSS_BUCKET)
+
+    # 测试连接
+    bucket.get_bucket_info()
+    print("OSS Bucket 连接成功")
+
+    return bucket
 
 def get_oss_client():
     """获取OSS客户端"""
-    return AcsClient(
-        ak=Config.OSS_ACCESS_KEY_ID,
-        secret=Config.OSS_ACCESS_KEY_SECRET,
-        region_id=Config.OSS_REGION
-    )
-
+    try:
+        # 使用主账号AK创建客户端
+        client = AcsClient(
+            ak=Config.OSS_ACCESS_KEY_ID,
+            secret=Config.OSS_ACCESS_KEY_SECRET,
+            region_id=Config.OSS_REGION
+        )
+        return client
+    except Exception as e:
+        print(f"创建OSS客户端失败: {str(e)}")
+        raise OSSOperationError(f"客户端创建失败: {str(e)}")
+        
 def generate_sts_token():
     """
     生成 OSS 临时上传凭证（STS Token）

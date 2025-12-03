@@ -20,4 +20,7 @@ def init_routes(app):
 
     from .image import image_bp
     app.register_blueprint(image_bp, url_prefix='/api/images')
+    
+    from .issue import issue_bp
+    app.register_blueprint(issue_bp, url_prefix='/api/issues')
 

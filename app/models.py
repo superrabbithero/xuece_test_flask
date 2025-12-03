@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import func
+from sqlalchemy import func, JSON
 from app import db
 
 class Package(db.Model):
@@ -302,3 +302,54 @@ class doc_image(db.Model):
             'image_id': self.image_id,
             'doc_id': self.doc_id
         }
+
+
+class Issue(db.Model):
+    __tablename__ = 'issues'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)  # 问题文字内容
+    images = db.Column(JSON, default=[])         # OSS图片URL列表
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='unhandled')  # unhandled/claimed/ignored/resolved
+    
+    # 提交者信息（被动获取时使用）
+    submitter_id = db.Column(db.String(50))       # 钉钉账号ID
+    submitter_name = db.Column(db.String(50))     # 钉钉昵称
+    
+    # 处理信息
+    handler_id = db.Column(db.String(50))         # 处理人账号ID
+    handler_name = db.Column(db.String(50))       # 处理人账号名
+    resolved_at = db.Column(db.DateTime)          # 处理时间
+    gitee_url = db.Column(db.String(255))          # Bug单地址
+    ignore_reason = db.Column(db.Text)             # 忽略原因
+
+    # 辅助方法（添加到Issue模型）
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "content": self.content,
+            "images": self.images,
+            "created_at": self.created_at.isoformat(),
+            "status": self.status,
+            "submitter": {"id": self.submitter_id, "name": self.submitter_name},
+            "handler": {"id": self.handler_id, "name": self.handler_name},
+            "resolved_at": self.resolved_at.isoformat() if self.resolved_at else None,
+            "gitee_url": self.gitee_url,
+            "ignore_reason": self.ignore_reason
+        }
+
+# 动态添加方法到模型
+# Issue.to_dict = to_dict
+
+class StatusChangeRecord(db.Model):
+    __tablename__ = 'status_change_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    issue_id = db.Column(db.Integer, db.ForeignKey('issues.id'))
+    old_status = db.Column(db.String(20))
+    new_status = db.Column(db.String(20))
+    operator_id = db.Column(db.String(50))     # 操作人账号ID
+    operator_name = db.Column(db.String(50))   # 操作人账号名
+    operated_at = db.Column(db.DateTime, default=datetime.utcnow)
+    extra_info = db.Column(JSON)  # 存储gitee_url/ignore_reason等额外信息
