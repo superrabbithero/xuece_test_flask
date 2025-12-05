@@ -159,16 +159,16 @@ def dingtalk_webhook():
     
     # 2. 安全校验与数据提取
     # 钉钉的消息内容在 'text' -> 'content' 中
-    raw_content = payload.get('text', {}).get('content', '').strip()
-    
+    raw_content = payload.get('content', '').strip()
+    imges = payload.get('imgs')
     # 获取发送者信息 (senderId 是加密的用户ID，senderNick 是昵称)
     sender_id = payload.get('senderId')
     sender_nick = payload.get('senderNick')
     
     # 3. 简单的逻辑处理
     # 虽然钉钉后台设置了关键字，但为了保险，代码里再判断一次
-    if not raw_content or not raw_content.startswith('%bug'):
-        return jsonify({"message": "ignored"}), 200
+    # if not raw_content or not raw_content.startswith('%bug'):
+    #     return jsonify({"message": "ignored"}), 200
     
     # 4. 调用 Service/Repository 层处理数据
     try:
@@ -176,8 +176,10 @@ def dingtalk_webhook():
         # 例如 "%bug 登录报错" -> "登录报错"
         parsed_data = DingTalkRepository.parse_bug_report(raw_content, sender_id, sender_nick)
         
+        print(parsed_data)
         # 创建 Issue
         issue = IssueRepository.create_issue(
+            images=imges,
             content=parsed_data['content'],
             submitter_id=parsed_data['submitter_id'],
             submitter_name=parsed_data['submitter_name']
